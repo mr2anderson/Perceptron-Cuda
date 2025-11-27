@@ -26,7 +26,6 @@ public:
     void show() const;
 
 private:
-    static float reluDerivative(float x);
     static void inputSignals(
         const std::vector<float>& layer,
         const Tensor2D& weights,
@@ -35,29 +34,6 @@ private:
     );
     static void relu(std::vector<float>& layer);
     static void softmax(std::vector<float>& layer);
-    static void lastLayerError(
-        const std::vector<float>& layer,
-        const std::vector<float>& perfect,
-        std::vector<float>& error
-    );
-    static void hiddenLayerError(
-        const std::vector<float>& layer,
-        const Tensor2D& weights,
-        const std::vector<float>& nextError,
-        std::vector<float>& outError
-    );
-    static float Loss(const std::vector<float>& pred, const std::vector<float>& target);
-    static void updateWeights(
-        Tensor2D& weights,
-        const std::vector<float>& error,
-        const std::vector<float>& layer,
-        float eta
-    );
-    static void updateBiases(
-        std::vector<float>& biases,
-        const std::vector<float>& error,
-        float eta
-    );
     static Tensor2D randomWeights(uint32_t left, uint32_t right);
     static std::vector<float> randomBiases(uint32_t sz);
     static void writeInt(std::ofstream& os, uint32_t v);

@@ -158,10 +158,6 @@ void Perceptron::show() const {
     std::cout << Separator;
 }
 
-float Perceptron::reluDerivative(float x) {
-    return x > 0.f ? 1.f : 0.f;
-}
-
 void Perceptron::inputSignals(
     const std::vector<float>& layer,
     const Tensor2D& w,
@@ -204,86 +200,6 @@ void Perceptron::softmax(std::vector<float>& x) {
     else {
         float inv = 1.f / s;
         for (float& v : x) v *= inv;
-    }
-}
-
-void Perceptron::lastLayerError(
-    const std::vector<float>& layer,
-    const std::vector<float>& perfect,
-    std::vector<float>& error
-) {
-    uint32_t n = static_cast<uint32_t>(layer.size());
-    if (perfect.size() != n) throw std::runtime_error("lastLayerError: size mismatch");
-    if (error.size() != n) error.resize(n);
-    for (uint32_t i = 0; i < n; i++) {
-        error[i] = layer[i] - perfect[i];
-    }
-}
-
-void Perceptron::hiddenLayerError(
-    const std::vector<float>& preAct,
-    const Tensor2D& w,
-    const std::vector<float>& nextError,
-    std::vector<float>& outError
-) {
-    uint32_t nIn = w.getA();
-    uint32_t nOut = w.getB();
-    if (preAct.size() != nIn || nextError.size() != nOut) {
-        throw std::runtime_error("hiddenLayerError: size mismatch");
-    }
-    if (outError.size() != nIn) outError.resize(nIn);
-
-    for (uint32_t i = 0; i < nIn; i++) {
-        float s = 0.f;
-        for (uint32_t j = 0; j < nOut; j++) {
-            s += nextError[j] * w(i, j);
-        }
-        outError[i] = s * reluDerivative(preAct[i]);
-    }
-}
-
-float Perceptron::Loss(
-    const std::vector<float>& pred,
-    const std::vector<float>& target
-) {
-    uint32_t n = static_cast<uint32_t>(pred.size());
-    if (target.size() != n) throw std::runtime_error("Loss: size mismatch");
-    uint32_t id = 0;
-    for (uint32_t i = 0; i < n; i++) {
-        if (target[i] == 1.f) { id = i; break; }
-    }
-    float p = pred[id];
-    if (p < 1e-9f) p = 1e-9f;
-    return -std::log(p);
-}
-
-void Perceptron::updateWeights(
-    Tensor2D& w,
-    const std::vector<float>& e,
-    const std::vector<float>& layer,
-    float eta
-) {
-    uint32_t nIn = w.getA();
-    uint32_t nOut = w.getB();
-    if (layer.size() != nIn || e.size() != nOut) {
-        throw std::runtime_error("updateWeights: size mismatch");
-    }
-    for (uint32_t i = 0; i < nIn; i++) {
-        for (uint32_t j = 0; j < nOut; j++) {
-            w(i, j) -= eta * e[j] * layer[i];
-        }
-    }
-}
-
-void Perceptron::updateBiases(
-    std::vector<float>& b,
-    const std::vector<float>& e,
-    float eta
-) {
-    uint32_t n = static_cast<uint32_t>(b.size());
-    if (e.size() != n) throw std::runtime_error("updateBiases: size mismatch");
-    for (uint32_t i = 0; i < n; i++) {
-        b[i] -= eta * e[i];
     }
 }
 
