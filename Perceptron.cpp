@@ -4,7 +4,9 @@
 #include <algorithm>
 #include <iostream>
 #include <stdexcept>
+#include <random>
 #include "GPUTrainer.hpp"
+
 
 Perceptron::Perceptron() = default;
 
@@ -68,9 +70,10 @@ std::vector<float> Perceptron::eval(std::vector<float> x) const {
 }
 
 void Perceptron::train(
-    const std::vector<std::pair<std::vector<float>, std::vector<float>>>& data,
+    std::vector<std::pair<std::vector<float>, std::vector<float>>>& data,
     float eta,
-    uint32_t maxEpoch
+    uint32_t maxEpoch,
+    const std::function<void(uint32_t, const Perceptron&)>& onEpochEnd
 ) {
     if (data.empty()) return;
 
@@ -97,7 +100,12 @@ void Perceptron::train(
 
     gpu.initNetwork(layersSize, wFlat, bFlat);
 
+    std::random_device rd;
+    std::mt19937 mt(rd());
+
     for (uint32_t epoch = 1; epoch <= maxEpoch; ++epoch) {
+        std::shuffle(data.begin(), data.end(), mt);
+
         gpu.trainEpoch(data, eta);
 
         // забираем обновлённые веса и сдвиги
@@ -111,7 +119,9 @@ void Perceptron::train(
             biases[k] = bFlat[k];
         }
 
-        save("autosave_epoch_" + std::to_string(epoch) + ".bin");
+        if (onEpochEnd) {
+            onEpochEnd(epoch, *this);
+        }
     }
 }
 

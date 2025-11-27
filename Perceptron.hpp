@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <utility>
 #include <fstream>
+#include <functional>
 #include "Tensor2D.hpp"
 
 class Perceptron {
@@ -17,9 +18,10 @@ public:
     std::vector<float> eval(std::vector<float> l1) const;
 
     void train(
-        const std::vector<std::pair<std::vector<float>, std::vector<float>>>& data,
+        std::vector<std::pair<std::vector<float>, std::vector<float>>>& data,
         float eta,
-        uint32_t maxEpoch
+        uint32_t maxEpoch,
+        const std::function<void(uint32_t, const Perceptron&)>& onEpochEnd
     );
 
     void save(const std::string& path) const;
